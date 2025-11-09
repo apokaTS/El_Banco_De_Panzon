@@ -1,0 +1,245 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Estructura base */
+body {
+  background: #f5f7fa;
+  color: #333;
+  transition: background 0.3s, color 0.3s;
+}
+
+header {
+  background: #004481;
+  color: #fff;
+  padding: 1rem 2rem;
+  font-size: 1.4rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.screen {
+  display: none;
+  padding: 2rem;
+  animation: fadeIn 0.4s ease;
+}
+
+.screen.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Login */
+.login-container {
+  max-width: 400px;
+  margin: 6rem auto;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.login-container h2 {
+  margin-bottom: 1rem;
+  color: #004481;
+}
+
+.login-container input {
+  width: 100%;
+  margin: 0.5rem 0;
+  padding: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.login-container button {
+  background: #004481;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.login-container button:hover {
+  background: #0066aa;
+}
+
+/* Dashboard */
+.navbar {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.navbar button {
+  background: #004481;
+  color: white;
+  border: none;
+  padding: 0.7rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.navbar button:hover {
+  background: #0066aa;
+}
+
+.content {
+  text-align: center;
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  width: 300px;
+}
+
+.card.balance p {
+  font-size: 1.5rem;
+  color: #0074d9;
+  font-weight: bold;
+}
+
+/* Transferencias, Movimientos */
+.form-transfer input,
+.form-transfer button {
+  display: block;
+  width: 100%;
+  margin: 0.5rem auto;
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.form-transfer button {
+  background: #004481;
+  color: white;
+  border: none;
+  margin-top: 1rem;
+}
+
+.form-transfer button:hover {
+  background: #0066aa;
+}
+
+.tabla {
+  max-width: 600px;
+  margin: 1rem auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: #004481;
+  color: white;
+}
+
+td,
+th {
+  padding: 0.8rem;
+  border-bottom: 1px solid #ccc;
+  text-align: left;
+}
+
+/* Configuración */
+#configuracion label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.1rem;
+}
+
+/* Modo oscuro */
+body.dark {
+  background: #121212;
+  color: #eee;
+}
+
+body.dark header {
+  background: #0b3a6a;
+}
+
+body.dark .card,
+body.dark .login-container {
+  background: #1e1e1e;
+  color: #fff;
+}
+
+body.dark input,
+body.dark button {
+  background: #222;
+  color: #fff;
+  border: 1px solid #333;
+}
+
+/* ======= Pantalla Agregar Perfil ======= */
+.register-container {
+  max-width: 400px;
+  margin: 60px auto;
+  background: var(--card-bg);
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  text-align: center;
+}
+
+.register-container h2 {
+  color: var(--text-color);
+  margin-bottom: 10px;
+}
+
+.register-container input {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1em;
+}
+
+.register-container button {
+  background-color: #0066cc;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.register-container button:hover {
+  background-color: #004b99;
+}
