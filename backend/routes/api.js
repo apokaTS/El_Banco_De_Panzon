@@ -96,9 +96,20 @@ router.get("/balance/:username", authenticateToken, async (req, res) => {
     // Only allow the authenticated user to view their own balance
     if (req.user.username !== req.params.username)
       return res.status(403).json({ error: "Acceso denegado" });
-    const user = await User.findOne({ username: req.params.username });
+
+    // Select only the fields we need: balance, transactions and cardStatus
+    const user = await User.findOne({ username: req.params.username }).select(
+      "balance transactions cardStatus"
+    );
+
     if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
-    return res.json({ balance: user.balance });
+
+    // Return balance and transactions so the frontend can render movimientos
+    return res.json({
+      balance: user.balance,
+      transactions: user.transactions || [],
+      cardStatus: user.cardStatus,
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Error del servidor" });
