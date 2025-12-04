@@ -10,7 +10,7 @@ buttons.forEach((btn) => {
   });
 });
 
-const API = "http://localhost:3000/api";
+const API = "http://172.20.10.3:3000/api";
 let usuarioActual = null;
 
 // Login real

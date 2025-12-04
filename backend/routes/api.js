@@ -54,25 +54,26 @@ router.post("/register", async (req, res) => {
   try {
     const { username, password, balance } = req.body;
     if (!username || !password) {
-      return res.status(400).json({
-        success: false,
-        error: "Credenciales incompletas",
-      });
+      return res
+        .status(400)
+        .json({ success: false, error: "Credenciales incompletas" });
     }
 
     // Verificar si el usuario ya existe
     const existing = await User.findOne({ username });
     if (existing) {
-      return res.status(409).json({
-        success: false,
-        error: "El usuario ya existe en la base de datos",
-      });
+      return res
+        .status(409)
+        .json({
+          success: false,
+          error: "El usuario ya existe en la base de datos",
+        });
     }
 
     const user = new User({
       username,
       password,
-      balance: balance || 1000, // Balance inicial por defecto
+      balance: balance || 1000,
       cardStatus: "active",
       transactions: [],
     });
@@ -90,33 +91,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Requerimiento 1: Consultar saldo (protegido)
-router.get("/balance/:username", authenticateToken, async (req, res) => {
-  try {
-    // Only allow the authenticated user to view their own balance
-    if (req.user.username !== req.params.username)
-      return res.status(403).json({ error: "Acceso denegado" });
-
-    // Select only the fields we need: balance, transactions and cardStatus
-    const user = await User.findOne({ username: req.params.username }).select(
-      "balance transactions cardStatus"
-    );
-
-    if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
-
-    // Return balance and transactions so the frontend can render movimientos
-    return res.json({
-      balance: user.balance,
-      transactions: user.transactions || [],
-      cardStatus: user.cardStatus,
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Error del servidor" });
-  }
-});
-
-// Requerimiento 2: Login
+// Login endpoint
 router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -148,83 +123,126 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Requerimiento 3: Transferencia (protegido)
+// Balance endpoint: devuelve balance, transactions y cardStatus
+router.get("/balance/:username", authenticateToken, async (req, res) => {
+  try {
+    if (req.user.username !== req.params.username)
+      return res.status(403).json({ error: "Acceso denegado" });
+    const user = await User.findOne({ username: req.params.username }).select(
+      "balance transactions cardStatus"
+    );
+    if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+    return res.json({
+      balance: user.balance,
+      transactions: user.transactions || [],
+      cardStatus: user.cardStatus,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Error del servidor" });
+  }
+});
+
+// Transfer endpoint (mejorado: decremento atómico del emisor)
 router.post("/transfer", authenticateToken, async (req, res) => {
   const { from, to, amount } = req.body;
 
   // Validaciones básicas
-  if (!from || !to || amount === undefined) {
+  if (!from || !to || amount === undefined)
     return res.status(400).json({ error: "Parámetros inválidos" });
-  }
-  if (from === to) {
+  if (from === to)
     return res
       .status(400)
       .json({ error: "No se puede transferir al mismo usuario" });
-  }
-  if (!isValidAmount(amount)) {
+  if (!isValidAmount(amount))
     return res.status(400).json({ error: "Monto inválido" });
-  }
-  if (req.user.username !== from) {
+  if (req.user.username !== from)
     return res.status(403).json({ error: "No autorizado" });
-  }
 
   try {
-    // 1. Verificar que el emisor existe y tiene fondos suficientes
-    const sender = await User.findOne({ username: from });
-    if (!sender) {
-      return res.status(404).json({ error: "Cuenta de origen no encontrada" });
-    }
-    if (sender.balance < amount) {
-      return res.status(400).json({ error: "Fondos insuficientes" });
-    }
-
-    // 2. Verificar que el receptor existe
-    const receiver = await User.findOne({ username: to });
-    if (!receiver) {
-      return res.status(404).json({ error: "Cuenta destino no encontrada" });
-    }
-
-    // 3. Realizar la transferencia
     const now = new Date();
 
-    // Actualizar emisor
-    sender.balance -= amount;
-    sender.transactions.push({
-      type: "debit",
-      amount,
-      date: now,
-    });
-    await sender.save();
+    // 1) Intentar decrementar al emisor de forma atómica sólo si tiene fondos suficientes
+    const updatedSender = await User.findOneAndUpdate(
+      { username: from, balance: { $gte: amount } },
+      {
+        $inc: { balance: -amount },
+        $push: { transactions: { type: "debit", amount, date: now } },
+      },
+      { new: true }
+    );
 
-    // Actualizar receptor
-    receiver.balance += amount;
-    receiver.transactions.push({
-      type: "credit",
-      amount,
-      date: now,
-    });
-    await receiver.save();
+    if (!updatedSender)
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error: "Fondos insuficientes o cuenta de origen no encontrada",
+        });
+
+    // 2) Actualizar receptor
+    const updatedReceiver = await User.findOneAndUpdate(
+      { username: to },
+      {
+        $inc: { balance: amount },
+        $push: { transactions: { type: "credit", amount, date: now } },
+      },
+      { new: true }
+    );
+
+    if (!updatedReceiver) {
+      // Receptor no existe: intentar revertir al emisor
+      try {
+        await User.findOneAndUpdate(
+          { username: from },
+          {
+            $inc: { balance: amount },
+            $push: {
+              transactions: {
+                type: "reversal",
+                amount,
+                date: new Date(),
+                note: "rollback: receptor inexistente",
+              },
+            },
+          }
+        );
+      } catch (revertErr) {
+        console.error(
+          "Error al revertir la transferencia tras receptor inexistente:",
+          revertErr
+        );
+      }
+      return res
+        .status(404)
+        .json({
+          success: false,
+          error:
+            "Cuenta destino no encontrada. Transferencia revertida si fue posible.",
+        });
+    }
 
     return res.json({
       success: true,
       message: "Transferencia realizada con éxito",
-      newBalance: sender.balance,
+      newBalance: updatedSender.balance,
     });
   } catch (err) {
     console.error("Error en la transferencia:", err);
-    return res.status(500).json({
-      success: false,
-      error: "Error al procesar la transferencia",
-    });
+    return res
+      .status(500)
+      .json({ success: false, error: "Error al procesar la transferencia" });
   }
 });
 
-// Requerimiento 6: Estado de tarjeta (protegido)
+// Estado de tarjeta (protegido)
 router.get("/card/:username", authenticateToken, async (req, res) => {
   try {
     if (req.user.username !== req.params.username)
       return res.status(403).json({ error: "Acceso denegado" });
-    const user = await User.findOne({ username: req.params.username });
+    const user = await User.findOne({ username: req.params.username }).select(
+      "cardStatus"
+    );
     if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
     return res.json({ cardStatus: user.cardStatus });
   } catch (err) {
