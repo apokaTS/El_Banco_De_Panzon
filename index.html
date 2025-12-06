@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Banco Virtual</title>
+    <link rel="stylesheet" href="main.css" />
+</head>
+
+<body>
+    <header>
+        <div class="logo">💳 Banco Virtual</div>
+    </header>
+
+    <!-- 🟩 Pantalla de Login -->
+    <section id="class=" login " screen active">
+        <div class="login-container">
+            <h2>Inicia sesión</h2>
+            <input type="text" id="usuario" placeholder="Usuario" required />
+            <input type="password" id="password" placeholder="Contraseña" required />
+            <button id="btnLogin">Entrar</button>
+            <br /><br />
+            <p class="link">¿Olvidaste tu contraseña?</p>
+            <p class="link" data-target="agregarPerfil">
+                ¿No tienes cuenta? Crea una nueva
+            </p>
+        </div>
+    </section>
+
+    <!-- 🟦 Pantalla Agregar Perfil -->
+    <section id="agregarPerfil" class="screen">
+        <div class="register-container">
+            <h2>Crear nuevo perfil</h2>
+            <input type="text" id="nuevoNombre" placeholder="Nombre completo" required />
+            <input type="text" id="nuevaCuenta" placeholder="Número de cuenta" required />
+            <input type="password" id="nuevaPassword" placeholder="Contraseña" required />
+            <input type="number" id="saldoInicial" placeholder="Saldo inicial $" required />
+            <button id="btnRegistrar">Registrar</button>
+            <br /><br />
+            <button class="back" data-target="login">← Volver al inicio</button>
+        </div>
+    </section>
+
+    <!-- 🟨 Pantalla principal (Dashboard) -->
+    <section id="dashboard" class="screen">
+        <nav class="navbar">
+            <button data-target="dashboard">Inicio</button>
+            <button data-target="transferencias">Transferir</button>
+            <button data-target="movimientos">Movimientos</button>
+            <button data-target="configuracion">Configuración</button>
+            <button id="logout">Salir</button>
+        </nav>
+
+        <div class="content">
+            <h2>Bienvenido, <span id="nombreUsuario">Usuario</span></h2>
+            <div class="cards">
+                <div class="card balance">
+                    <h3>Saldo disponible</h3>
+                    <p id="saldoActual">$0.00</p>
+                    <h3>Estado de tarjeta</h3>
+                    <p id="estadoTarjeta">-</p>
+                </div>
+                <div class="card acciones">
+                    <button data-target="transferencias">➤ Transferir dinero</button>
+                    <button data-target="movimientos">📜 Ver movimientos</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 🟧 Pantalla Transferencias -->
+    <section id="transferencias" class="screen">
+        <h2>Transferir dinero</h2>
+        <div class="form-transfer">
+            <input type="text" id="cuenta" placeholder="Cuenta destino" required />
+            <input type="number" id="monto" placeholder="Monto $" required />
+            <input type="text" id="descripcion" placeholder="Descripción (opcional)" />
+            <button id="btnTransferir">Confirmar</button>
+        </div>
+        <button class="back" data-target="dashboard">← Volver</button>
+    </section>
+
+    <!-- 🟪 Pantalla Movimientos -->
+    <section id="movimientos" class="screen">
+        <h2>Historial de movimientos</h2>
+        <div class="tabla">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Descripción</th>
+                        <th>Monto</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaMovimientos">
+                    <!-- Movimientos reales generados dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+        <button class="back" data-target="dashboard">← Volver</button>
+    </section>
+
+    <!-- 🟫 Pantalla Configuración -->
+    <section id="configuracion" class="screen">
+        <h2>Configuración</h2>
+        <label>
+        Tema oscuro
+        <input type="checkbox" id="toggleDarkMode" />
+      </label>
+        <button class="back" data-target="dashboard">← Volver</button>
+    </section>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
